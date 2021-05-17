@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="gBankerCollectionProcessor:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/gBankerCollectionProcessor_jar</output-path>
+    <root id="archive" name="gBankerCollectionProcessor.jar">
+      <element id="module-output" name="gBankerCollectionProcessor" />
+      <element id="extracted-dir" path="C:/Microsoft JDBC Driver x.x for SQL Server/sqljdbc_6.0/enu/jre7/sqljdbc41.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/gson-2.2.2.jar/gson-2.2.2.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
