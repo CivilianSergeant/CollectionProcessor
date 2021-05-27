@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
+    Connection conn = null;
 
     public static void main(String[] args) {
         Timer timer = new Timer();
@@ -64,9 +65,12 @@ class MyTask extends TimerTask{
         System.out.println("Password: "+pass);
         System.out.println("No of thread:"+noOfthread);
 
+
+
         try {
+
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            conn = DriverManager.getConnection(URL,user,password);
+            conn = (conn!=null)? conn : DriverManager.getConnection(URL,user,password);
             if(conn != null){
 
 
