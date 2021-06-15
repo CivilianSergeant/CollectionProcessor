@@ -81,9 +81,16 @@ public class ExecuteProcess implements Runnable {
                 conn.setAutoCommit(true);
             }
 
-
+            conn.setAutoCommit(true);
         } catch (SQLException e) {
+
             e.printStackTrace();
+        }finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
 
 

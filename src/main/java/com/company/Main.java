@@ -7,9 +7,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
-    Connection conn = null;
+
 
     public static void main(String[] args) {
         Timer timer = new Timer();
@@ -70,7 +71,7 @@ class MyTask extends TimerTask{
         try {
 
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            conn = (conn!=null)? conn : DriverManager.getConnection(URL,user,password);
+            conn =  DriverManager.getConnection(URL,user,password);
             if(conn != null){
 
 
@@ -82,16 +83,17 @@ class MyTask extends TimerTask{
 
                 switch (serviceType){
                     case "gbanker":
-                        sql="SELECT TOP 20 * FROM TabCollection WHERE IsProcessed=0 ORDER BY TabParkingID ASC";
+                        sql="SELECT TOP "+this.noOfthread+" * FROM TabCollection WHERE IsProcessed=0 ORDER BY TabParkingID ASC";
                     break;
                     case "gaccounts":
                     sql="SELECT TOP 20 * FROM AccQueue WHERE IsProcessed=0 ORDER BY QueueId ASC";
                     break;
                 }
                 ResultSet resultSet = stmt.executeQuery(sql);
-
+                int i = 0;
                 while (resultSet.next()) {
-
+                    i++;
+                    System.out.println("Has Result");
                     String tabData ="";
                     switch(serviceType){
                         case "gbanker":
@@ -105,22 +107,39 @@ class MyTask extends TimerTask{
                     }
                     executor.execute(runnable);
                 }
-
-                executor.shutdown();
+                if(i>0) {
+                    System.out.println("Records Found: "+ String.valueOf(i));
+                    if(executor.awaitTermination((i+5), TimeUnit.SECONDS)){
+                        executor.shutdownNow();
+                    }
+                }
                 long finish = System.currentTimeMillis();
                 long timeElapsed = finish - start;
                 System.out.println("Elapsed Time: " + timeElapsed + "ms");
 
 
                 System.out.println("Success");
-
-
+                resultSet.close();
+                conn.close();
+                System.out.println("End Process");
             }
+
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {
             e.printStackTrace();
             //System.out.println("Success");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }finally {
+            if(conn!=null){
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("End Session");
+            }
         }
 
     }
