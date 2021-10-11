@@ -1,17 +1,23 @@
 package com.company;
 
 import com.company.accounts.AccountingProcess;
+import com.company.email.EmailService;
+import com.company.email.EmailServiceImpl;
+import com.company.exception.ExceptionWriter;
+import com.company.logger.WriteLog;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 public class Main {
 
-
+    static WriteLog writeLog;
     public static void main(String[] args) {
         Timer timer = new Timer();
         long period = Long.valueOf(args[0]);
@@ -22,12 +28,20 @@ public class Main {
             System.exit(0);
         }
 
+        try {
+            Logger logger = Logger.getLogger(args[2]);
+            writeLog = new WriteLog(logger);
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
         timer.schedule(new MyTask(args[1],
                 args[2],
                 args[3],
                 args[4],
                 args[5],
-                args[6]
+                args[6],writeLog
                 ),0,period);
     }
 }
@@ -42,14 +56,15 @@ class MyTask extends TimerTask{
     String pass;
     String serviceType;
     int noOfthread;
-
-    MyTask(String ip, String db, String user, String pass,String serviceType, String thNo){
+    WriteLog writeLog;
+    MyTask(String ip, String db, String user, String pass,String serviceType, String thNo,WriteLog w){
         this.ip = ip;
         this.db = db;
         this.user = user;
         this.pass = pass;
         this.serviceType = serviceType;
         this.noOfthread = Integer.parseInt(thNo);
+        writeLog = w;
     }
 
     @Override
@@ -64,11 +79,12 @@ class MyTask extends TimerTask{
         System.out.println("DSN: "+URL);
         System.out.println("User: "+user);
         System.out.println("Password: "+pass);
-        System.out.println("No of thread:"+noOfthread);
-
+        System.out.println("No of thread: "+noOfthread);
+        EmailService emailService = new EmailServiceImpl();
 
 
         try {
+
 
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             conn =  DriverManager.getConnection(URL,user,password);
@@ -109,7 +125,7 @@ class MyTask extends TimerTask{
                 }
                 if(i>0) {
                     System.out.println("Records Found: "+ String.valueOf(i));
-                    if(executor.awaitTermination((i+5), TimeUnit.SECONDS)){
+                    if(executor.awaitTermination((i+60), TimeUnit.SECONDS)){
                         executor.shutdownNow();
                     }
                 }
@@ -125,17 +141,23 @@ class MyTask extends TimerTask{
             }
 
         } catch (ClassNotFoundException e) {
+            emailService.sendMail(ExceptionWriter.getExceptionMessage(db,ip,e,writeLog));
             e.printStackTrace();
         } catch (SQLException e) {
+
+            emailService.sendMail(ExceptionWriter.getExceptionMessage(db,ip,e,writeLog));
             e.printStackTrace();
-            //System.out.println("Success");
+
         } catch (InterruptedException e) {
+
+            emailService.sendMail(ExceptionWriter.getExceptionMessage(db,ip,e,writeLog));
             e.printStackTrace();
-        }finally {
+        } finally {
             if(conn!=null){
                 try {
                     conn.close();
                 } catch (SQLException e) {
+                    emailService.sendMail(ExceptionWriter.getExceptionMessage(db,ip,e,writeLog));
                     e.printStackTrace();
                 }
                 System.out.println("End Session");

@@ -54,14 +54,12 @@ public class ExecuteProcess implements Runnable {
                         while (r!=null && r.next()){
                             System.out.println(r.getString(1));
                         }
-                        if(executed){
-                            System.out.println("GUID:"+collection.getToken()+" "+executed);
-                        }
+//                        if(executed){
+//                            System.out.println("GUID:"+collection.getToken()+" "+executed);
+//                        }
 
                     } catch (SQLException e) {
                         isError=true;
-
-                        e.printStackTrace();
                     }
                 });
 
@@ -83,14 +81,8 @@ public class ExecuteProcess implements Runnable {
 
             conn.setAutoCommit(true);
         } catch (SQLException e) {
-
-            e.printStackTrace();
-        }finally {
-            try {
-                conn.setAutoCommit(true);
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
+            // if any case connection closed from server
+            isError=true;
         }
 
 
