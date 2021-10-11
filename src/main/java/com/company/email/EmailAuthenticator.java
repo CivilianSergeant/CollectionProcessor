@@ -7,6 +7,6 @@ public class EmailAuthenticator extends Authenticator {
 
     @Override
     protected PasswordAuthentication getPasswordAuthentication() {
-        return new PasswordAuthentication("info.grameencommunications","GC@#$2020");
+        return new PasswordAuthentication("info.grameencommunications","**********");
     }
 }
